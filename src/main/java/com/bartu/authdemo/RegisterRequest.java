@@ -1,4 +1,4 @@
 package com.bartu.authdemo;
 
-public class RegisterRequest {
+public record RegisterRequest(String email, String password) {
 }
