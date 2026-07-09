@@ -28,11 +28,12 @@ public class AuthService {
         userRepository.save(user);
     }
 
-    public void login(LoginRequest request){
+    public User login(LoginRequest request){
         User user = userRepository.findByEmail(request.email()).orElseThrow(() -> new RuntimeException("User not registered"));
 
         if(!passwordEncoder.matches(request.password(), user.getPasswordHash())){
             throw new RuntimeException("Invalid email or password");
         }
+        return user;
     }
 }
