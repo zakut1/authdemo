@@ -2,21 +2,32 @@ package com.bartu.authdemo;
 
 import com.bartu.authdemo.Security.AuthUserDetails;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.security.core.Authentication;
+
 
 @RestController
 public class AuthController {
 
     private final AuthService authService;
-    public AuthController(AuthService authService) {
+    private final SecurityContextRepository securityContextRepository;
+    private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
+
+
+    public AuthController(AuthService authService, SecurityContextRepository securityContextRepository, SessionAuthenticationStrategy sessionAuthenticationStrategy) {
         this.authService = authService;
+        this.securityContextRepository = securityContextRepository;
+        this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
     }
 
 
@@ -31,16 +42,21 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+
         try {
             Authentication authentication = authService.login(request);
 
-            AuthUserDetails authenticatedUser = (AuthUserDetails) authentication.getPrincipal();
+            sessionAuthenticationStrategy.onAuthentication(authentication, httpRequest, httpResponse);
 
-            HttpSession session = httpRequest.getSession(true);
+            SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+            securityContext.setAuthentication(authentication);
+            SecurityContextHolder.setContext(securityContext);
+//              AuthUserDetails authenticatedUser = (AuthUserDetails) authentication.getPrincipal();
+//              session.setAttribute("email", authenticatedUser.getEmail());
+//              session.setAttribute("userId", authenticatedUser.getId());
+            securityContextRepository.saveContext(securityContext, httpRequest, httpResponse);
 
-            session.setAttribute("email", authenticatedUser.getEmail());
-            session.setAttribute("userId", authenticatedUser.getId());
 
             return ResponseEntity.ok("User logged in");
 
@@ -68,30 +84,13 @@ public class AuthController {
 //    }
 
     @GetMapping("api/auth/me")
-    ResponseEntity<?> me(HttpServletRequest request){
-        HttpSession session = request.getSession(false);
+    ResponseEntity<CurrentUserResponse> me(Authentication authentication){
 
-        if(session == null || session.getAttribute("userId") == null){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
-        }
+        AuthUserDetails currentUser = (AuthUserDetails) authentication.getPrincipal();
 
-        Long userId = (Long) session.getAttribute("userId");
-        String email = (String) session.getAttribute("email");
-
-        CurrentUserResponse response = new CurrentUserResponse(userId, email);
+        CurrentUserResponse response = new CurrentUserResponse(currentUser.getId(), currentUser.getEmail());
 
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/api/auth/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
-
-        if (session != null) {
-            session.invalidate();
-        }
-
-        return ResponseEntity.ok("Logged out");
     }
 
 }
