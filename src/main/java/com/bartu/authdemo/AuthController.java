@@ -10,6 +10,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,7 +25,11 @@ public class AuthController {
     private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
 
 
-    public AuthController(AuthService authService, SecurityContextRepository securityContextRepository, SessionAuthenticationStrategy sessionAuthenticationStrategy) {
+    public AuthController(
+            AuthService authService,
+            SecurityContextRepository securityContextRepository,
+            SessionAuthenticationStrategy sessionAuthenticationStrategy
+    ) {
         this.authService = authService;
         this.securityContextRepository = securityContextRepository;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
@@ -42,7 +47,10 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+    public ResponseEntity<String> login(
+            @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse) {
 
         try {
             Authentication authentication = authService.login(request);
@@ -52,9 +60,7 @@ public class AuthController {
             SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
             securityContext.setAuthentication(authentication);
             SecurityContextHolder.setContext(securityContext);
-//              AuthUserDetails authenticatedUser = (AuthUserDetails) authentication.getPrincipal();
-//              session.setAttribute("email", authenticatedUser.getEmail());
-//              session.setAttribute("userId", authenticatedUser.getId());
+
             securityContextRepository.saveContext(securityContext, httpRequest, httpResponse);
 
 
@@ -67,23 +73,7 @@ public class AuthController {
         }
     }
 
-//    @PostMapping("api/auth/login")
-//    public ResponseEntity<String> login(@RequestBody LoginRequest request, HttpServletRequest htttpRequest){
-//        try{
-//            User user = authService.login(request);
-//
-//            HttpSession session = htttpRequest.getSession(true);
-//
-//            session.setAttribute("email", user.getEmail());
-//            session.setAttribute("userId", user.getId());
-//
-//            return ResponseEntity.ok("User logged in");
-//        } catch(RuntimeException e){
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-//        }
-//    }
-
-    @GetMapping("api/auth/me")
+    @GetMapping("/api/auth/me")
     ResponseEntity<CurrentUserResponse> me(Authentication authentication){
 
         AuthUserDetails currentUser = (AuthUserDetails) authentication.getPrincipal();
@@ -91,6 +81,11 @@ public class AuthController {
         CurrentUserResponse response = new CurrentUserResponse(currentUser.getId(), currentUser.getEmail());
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api/csrf")
+    CsrfToken csrf(CsrfToken csrfToken) {
+        return csrfToken;
     }
 
 }

@@ -49,6 +49,8 @@
         </div>
     </div>
 
+    <script src="/csrf.js"></script>
+
     <script>
         const form =
             document.getElementById("registerForm");
@@ -74,7 +76,8 @@
                         method: "POST",
 
                         headers: {
-                            "Content-Type": "application/json"
+                            "Content-Type": "application/json",
+                            [csrf.headerName]: csrf.token
                         },
 
                         body: JSON.stringify({

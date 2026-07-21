@@ -57,30 +57,6 @@ public class AuthService {
         userRegistrationProducer.publish(event);
     }
 
-//    public User login(LoginRequest request){
-//        LoginEvent event;
-//        User user = userRepository.findByEmail(request.email()).orElse(null);
-//
-//        if(user == null){
-//            event = new LoginEvent(null, request.email(),false, LocalDateTime.now()); //user not registered event
-//            loginEventProducer.publish(event);
-//
-//            throw new RuntimeException("User not registered");
-//        }
-//
-//        if(!passwordEncoder.matches(request.password(), user.getPasswordHash())){
-//            event = new LoginEvent(user.getId(), user.getEmail(),false, LocalDateTime.now()); //wrong password event
-//            loginEventProducer.publish(event);
-//
-//            throw new RuntimeException("Invalid email or password");
-//        }
-//
-//        event = new LoginEvent(user.getId(),user.getEmail(),true, LocalDateTime.now());     //successful login event
-//        loginEventProducer.publish(event);
-//
-//        return user;
-//    }
-
     public Authentication login(LoginRequest request) {
         try {
             UsernamePasswordAuthenticationToken authenticationRequest =

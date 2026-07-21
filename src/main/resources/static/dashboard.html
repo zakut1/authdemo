@@ -26,6 +26,8 @@
         </div>
     </div>
 
+    <script src="/csrf.js"></script>
+
     <script>
         const welcomeMessage = document.getElementById("welcomeMessage");
         const logoutButton = document.getElementById("logoutButton");
@@ -44,11 +46,18 @@
         }
 
         logoutButton.addEventListener("click", async function () {
-            await fetch("/api/auth/logout", {
-                method: "POST"
+            const csrf = await fetchCsrfToken();
+
+            const response = await fetch("/api/auth/logout", {
+                method: "POST",
+                headers: {
+                    [csrf.headerName]: csrf.token
+                }
             });
 
-            window.location.href = "/login.html";
+            if (response.ok) {
+                window.location.href = "/login.html";
+            }
         });
 
         checkLoginStatus();

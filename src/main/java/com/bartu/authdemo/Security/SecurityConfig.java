@@ -17,11 +17,15 @@ import org.springframework.security.web.authentication.session.ChangeSessionIdAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
+import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
-
-
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -43,15 +47,28 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-        return new ChangeSessionIdAuthenticationStrategy();
+    public CsrfTokenRepository csrfTokenRepository() {
+        return new HttpSessionCsrfTokenRepository();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, SecurityContextRepository securityContextRepository) throws Exception {
+    public SessionAuthenticationStrategy sessionAuthenticationStrategy(
+            CsrfTokenRepository csrfTokenRepository) {
+
+        return new CompositeSessionAuthenticationStrategy(List.of(
+                new ChangeSessionIdAuthenticationStrategy(),
+                new CsrfAuthenticationStrategy(csrfTokenRepository)
+        ));
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(
+            HttpSecurity http,
+            SecurityContextRepository securityContextRepository,
+            CsrfTokenRepository csrfTokenRepository) throws Exception {
 
         http
-                .csrf((csrf) -> csrf.disable())
+                .csrf((csrf) -> csrf.csrfTokenRepository(csrfTokenRepository))
 
                 .formLogin((form) -> form.disable())
 
@@ -80,7 +97,13 @@ public class SecurityConfig {
                                 "/login.html",
                                 "/register.html",
                                 "/favicon.ico",
-                                "/error"
+                                "/error",
+                                "/csrf.js"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/csrf"
                         ).permitAll()
 
                         .requestMatchers(

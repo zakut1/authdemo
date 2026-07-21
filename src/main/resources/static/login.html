@@ -48,6 +48,8 @@
         </div>
     </div>
 
+    <script src="/csrf.js"></script>
+
     <script>
         const form = document.getElementById("loginForm");
         const message = document.getElementById("message");
@@ -55,13 +57,16 @@
         form.addEventListener("submit", async function (event) {
             event.preventDefault();
 
+            const csrf = await fetchCsrfToken();
+
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
 
             const response = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    [csrf.headerName]: csrf.token
                 },
                 body: JSON.stringify({
                     email: email,
