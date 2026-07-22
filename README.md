@@ -8,7 +8,6 @@ A simple authentication demo built with Java, Spring Boot, MySQL, simple HTML/Ja
 
 You only need **Docker Desktop** installed.
 
-Java, Maven, MySQL, and Kafka do not need to be installed separately on your machine because the required services are handled through Docker.
 
 ### 1. Clone the repository
 
@@ -16,7 +15,7 @@ Java, Maven, MySQL, and Kafka do not need to be installed separately on your mac
 git clone <repository-url>
 ```
 
-Then enter the project directory:
+Enter the project directory:
 
 ```text
 cd authdemo
@@ -58,7 +57,6 @@ auth-db       → MySQL database
 auth-kafka    → Apache Kafka broker
 ```
 
-The application automatically connects to MySQL and Kafka through the Docker Compose network.
 
 ### 4. Open the application
 
@@ -98,9 +96,7 @@ auth-kafka
 ## Features
 
 - User registration
-- BCrypt password hashing
 - User login
-- HttpSession-based authentication
 - Logout
 - Simple Bootstrap frontend
 - MySQL persistence
@@ -120,7 +116,7 @@ auth-kafka
 - Spring Boot 4.1.0
 - Spring MVC
 - Spring Data JPA
-- Spring Security Crypto
+- Spring Security
 - Spring Kafka
 
 ### Database

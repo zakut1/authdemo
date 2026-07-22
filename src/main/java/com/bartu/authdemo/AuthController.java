@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,16 +24,19 @@ public class AuthController {
     private final AuthService authService;
     private final SecurityContextRepository securityContextRepository;
     private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
+    private final RememberMeServices rememberMeServices;
 
 
     public AuthController(
             AuthService authService,
             SecurityContextRepository securityContextRepository,
-            SessionAuthenticationStrategy sessionAuthenticationStrategy
+            SessionAuthenticationStrategy sessionAuthenticationStrategy,
+            RememberMeServices rememberMeServices
     ) {
         this.authService = authService;
         this.securityContextRepository = securityContextRepository;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
+        this.rememberMeServices = rememberMeServices;
     }
 
 
@@ -62,11 +66,14 @@ public class AuthController {
             SecurityContextHolder.setContext(securityContext);
 
             securityContextRepository.saveContext(securityContext, httpRequest, httpResponse);
+            rememberMeServices.loginSuccess(httpRequest, httpResponse, authentication);
 
 
             return ResponseEntity.ok("User logged in");
 
         } catch (RuntimeException exception) {
+            rememberMeServices.loginFail(httpRequest, httpResponse);
+
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(exception.getMessage());

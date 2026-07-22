@@ -13,7 +13,7 @@
 
     <div class="container">
         <div class="row justify-content-center align-items-center min-vh-100">
-            <div class = col-md-5>
+            <div class="col-md-5">
                 <div class="card shadow">
                     <div class="card-body p-4">
 
@@ -30,6 +30,11 @@
                             <label for="password">Password</label>
                             <br>
                             <input type="password" name="password" id="password" required placeholder="Enter your password" class="form-control">
+                        </div>
+
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">Remember me</label>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100">Login</button>
@@ -61,8 +66,9 @@
 
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
+            const rememberMe = document.getElementById("rememberMe").checked;
 
-            const response = await fetch("/api/auth/login", {
+            const response = await fetch(`/api/auth/login?remember-me=${rememberMe}`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

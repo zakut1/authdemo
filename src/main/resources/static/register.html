@@ -62,7 +62,10 @@
             "submit",
             async function (event) {
 
+
                 event.preventDefault();
+
+                const csrf = await fetchCsrfToken();
 
                 const email =
                     document.getElementById("email").value;

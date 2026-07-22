@@ -1,7 +1,5 @@
 package com.bartu.authdemo.kafka;
 
-import com.bartu.authdemo.LoginHistory;
-import com.bartu.authdemo.LoginHistoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;

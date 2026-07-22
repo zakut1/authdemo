@@ -21,11 +21,17 @@ import org.springframework.security.web.authentication.session.CompositeSessionA
 import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+
+    private static final int REMEMBER_ME_VALIDITY_SECONDS = 30 * 24 * 60 * 60;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -62,10 +68,31 @@ public class SecurityConfig {
     }
 
     @Bean
+    public RememberMeServices rememberMeServices(
+            @Value("${app.security.remember-me.key}") String rememberMeKey,
+            UserDetailsService userDetailsService,
+            PersistentTokenRepository persistentTokenRepository
+    ) {
+
+        PersistentTokenBasedRememberMeServices rememberMeServices =
+                new PersistentTokenBasedRememberMeServices(
+                        rememberMeKey,
+                        userDetailsService,
+                        persistentTokenRepository
+                );
+
+        rememberMeServices.setTokenValiditySeconds(REMEMBER_ME_VALIDITY_SECONDS);
+        rememberMeServices.setCookieName("AUTHDEMO_REMEMBER_ME");
+
+        return rememberMeServices;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http,
             SecurityContextRepository securityContextRepository,
-            CsrfTokenRepository csrfTokenRepository) throws Exception {
+            CsrfTokenRepository csrfTokenRepository,
+            RememberMeServices rememberMeServices) throws Exception {
 
         http
                 .csrf((csrf) -> csrf.csrfTokenRepository(csrfTokenRepository))
@@ -73,6 +100,8 @@ public class SecurityConfig {
                 .formLogin((form) -> form.disable())
 
                 .httpBasic((basic) -> basic.disable())
+
+                .rememberMe((rememberMe) -> rememberMe.rememberMeServices(rememberMeServices))
 
                 .securityContext(context ->
                         context.securityContextRepository(securityContextRepository)
