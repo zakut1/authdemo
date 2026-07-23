@@ -93,7 +93,7 @@ public class AuthService {
 
             if (attemptedUser == null)
 
-                throw new RuntimeException("User not registered");
+                throw new RuntimeException("Invalid email or password");
             }
 
             throw new RuntimeException("Invalid email or password");

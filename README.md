@@ -107,6 +107,12 @@ auth-kafka
 - Login event publishing and consuming
 - Successful and failed login event tracking
 - Login history persistence in MySQL
+- Spring Security authentication
+- Server-side authenticated sessions
+- CSRF protection
+- Protected frontend and API routes
+- Persistent database-backed remember-me login
+- Remember-me token rotation and logout revocation
 
 ## Techs
 

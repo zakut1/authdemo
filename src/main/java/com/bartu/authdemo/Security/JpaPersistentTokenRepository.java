@@ -45,7 +45,8 @@ public class JpaPersistentTokenRepository implements PersistentTokenRepository {
     @Transactional(readOnly = true)
     public PersistentRememberMeToken getTokenForSeries(String seriesId) {
         return persistentLoginRepository.findById(seriesId)
-                .map(token -> new PersistentRememberMeToken(
+                .map(token ->
+                        new PersistentRememberMeToken(
                         token.getUsername(),
                         token.getSeries(),
                         token.getToken(),
